@@ -1,0 +1,45 @@
+{
+  "id": "INC-010",
+  "window_start": "2026-08-29T12:00:00",
+  "window_end": "2026-08-29T13:00:00",
+  "description": "Upstream gRPC calls timing out after an upstream service upgrade.",
+  "true_root_cause": "grpc_upstream_timeout",
+  "red_herring": "node_oom",
+  "evidence": [
+    {
+      "id": "E1",
+      "ts": "2026-08-29T12:01:00",
+      "source": "deploys",
+      "source_url": "https://ci.example/upstream/3",
+      "content": "upstream inventory-svc upgraded; grpc keepalive tightened"
+    },
+    {
+      "id": "E2",
+      "ts": "2026-08-29T12:03:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/grpc/timeout",
+      "content": "grpc deadline_exceeded 0 -> 17%"
+    },
+    {
+      "id": "E3",
+      "ts": "2026-08-29T12:12:00",
+      "source": "logs",
+      "source_url": "https://logs.example/grpc",
+      "content": "received RST_STREAM after 100ms keepalive on inventory-svc"
+    },
+    {
+      "id": "E4",
+      "ts": "2026-08-29T12:25:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/node/mem",
+      "content": "node memory 55% (no OOM)"
+    },
+    {
+      "id": "E5",
+      "ts": "2026-08-29T12:35:00",
+      "source": "chat",
+      "source_url": "https://chat.example/inc-010",
+      "content": "on-call: 'no oom; upstream grpc keepalive is killing streams'"
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "id": "INC-001",
+  "window_start": "2026-08-20T14:00:00",
+  "window_end": "2026-08-20T15:00:00",
+  "description": "Checkout failures and elevated payment errors after the 14:02 payment-service deploy.",
+  "true_root_cause": "config_timeout_drop",
+  "red_herring": "db_cpu_spike",
+  "evidence": [
+    {
+      "id": "E1",
+      "ts": "2026-08-20T14:02:00",
+      "source": "deploys",
+      "source_url": "https://ci.example/payment/142",
+      "content": "payment-service v2.3.1 deployed; config change payment_timeout_ms 2000 -> 200"
+    },
+    {
+      "id": "E2",
+      "ts": "2026-08-20T14:03:30",
+      "source": "metrics",
+      "source_url": "https://grafana.example/checkout/latency",
+      "content": "checkout p99 latency rose 800ms -> 4.2s"
+    },
+    {
+      "id": "E3",
+      "ts": "2026-08-20T14:10:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/checkout/errors",
+      "content": "checkout error rate 0.1% -> 5.3%"
+    },
+    {
+      "id": "E4",
+      "ts": "2026-08-20T14:12:00",
+      "source": "logs",
+      "source_url": "https://logs.example/payment",
+      "content": "PaymentGateway timeout after 200ms (expected >=2000ms)"
+    },
+    {
+      "id": "E5",
+      "ts": "2026-08-20T14:25:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/db/cpu",
+      "content": "DB CPU spike to 95% (coincidental, unrelated batch job)"
+    },
+    {
+      "id": "E6",
+      "ts": "2026-08-20T14:30:00",
+      "source": "chat",
+      "source_url": "https://chat.example/inc-001",
+      "content": "on-call: 'looks like the 14:02 deploy changed a timeout; DB spike is a separate batch'"
+    },
+    {
+      "id": "E7",
+      "ts": "2026-08-20T14:45:00",
+      "source": "deploys",
+      "source_url": "https://ci.example/payment/143",
+      "content": "rollback payment_timeout_ms to 2000"
+    },
+    {
+      "id": "E8",
+      "ts": "2026-08-20T14:50:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/checkout/errors",
+      "content": "checkout error rate recovered to 0.2%"
+    }
+  ]
+}

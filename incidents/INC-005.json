@@ -1,0 +1,45 @@
+{
+  "id": "INC-005",
+  "window_start": "2026-08-24T13:00:00",
+  "window_end": "2026-08-24T14:00:00",
+  "description": "Database connections exhausted; app pods crash-looping.",
+  "true_root_cause": "connection_pool_exhaustion",
+  "red_herring": "cpu_throttling",
+  "evidence": [
+    {
+      "id": "E1",
+      "ts": "2026-08-24T13:02:00",
+      "source": "deploys",
+      "source_url": "https://ci.example/api/90",
+      "content": "api v3.1 raised DB pool max 20 -> 200 per pod (x40 pods = 8000)"
+    },
+    {
+      "id": "E2",
+      "ts": "2026-08-24T13:04:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/db/conns",
+      "content": "DB active connections hit max 6000"
+    },
+    {
+      "id": "E3",
+      "ts": "2026-08-24T13:12:00",
+      "source": "logs",
+      "source_url": "https://logs.example/api",
+      "content": "FATAL: remaining connection slots are reserved"
+    },
+    {
+      "id": "E4",
+      "ts": "2026-08-24T13:30:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/cpu/throttle",
+      "content": "CPU throttling 4% (nominal)"
+    },
+    {
+      "id": "E5",
+      "ts": "2026-08-24T13:40:00",
+      "source": "chat",
+      "source_url": "https://chat.example/inc-005",
+      "content": "on-call: 'cpu fine; we just opened 8000 connections to a 6000-cap db'"
+    }
+  ]
+}

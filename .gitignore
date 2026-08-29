@@ -1,0 +1,12 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+env/
+.chroma/
+fixtures/llm_cache.jsonl
+.agents/

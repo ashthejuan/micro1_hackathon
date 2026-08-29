@@ -1,0 +1,52 @@
+{
+  "id": "INC-002",
+  "window_start": "2026-08-21T09:00:00",
+  "window_end": "2026-08-21T10:00:00",
+  "description": "API latency spikes and cache hit-rate collapse after redis node maintenance.",
+  "true_root_cause": "redis_cache_eviction",
+  "red_herring": "network_latency",
+  "evidence": [
+    {
+      "id": "E1",
+      "ts": "2026-08-21T09:05:00",
+      "source": "deploys",
+      "source_url": "https://ci.example/infra/77",
+      "content": "redis maxmemory lowered 8GB -> 2GB during maintenance"
+    },
+    {
+      "id": "E2",
+      "ts": "2026-08-21T09:06:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/cache/hitrate",
+      "content": "cache hit-rate 96% -> 41%"
+    },
+    {
+      "id": "E3",
+      "ts": "2026-08-21T09:10:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/api/latency",
+      "content": "API p95 latency 120ms -> 900ms"
+    },
+    {
+      "id": "E4",
+      "ts": "2026-08-21T09:20:00",
+      "source": "logs",
+      "source_url": "https://logs.example/redis",
+      "content": "redis: evicted 1.2M keys/sec (maxmemory reached)"
+    },
+    {
+      "id": "E5",
+      "ts": "2026-08-21T09:30:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/net/rtt",
+      "content": "inter-AZ network RTT 2ms -> 3ms (within normal envelope)"
+    },
+    {
+      "id": "E6",
+      "ts": "2026-08-21T09:40:00",
+      "source": "chat",
+      "source_url": "https://chat.example/inc-002",
+      "content": "on-call: 'network looks fine; redis is evicting like crazy'"
+    }
+  ]
+}

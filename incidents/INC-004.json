@@ -1,0 +1,45 @@
+{
+  "id": "INC-004",
+  "window_start": "2026-08-23T11:00:00",
+  "window_end": "2026-08-23T12:00:00",
+  "description": "Service discovery failures; hosts unable to resolve internal DNS.",
+  "true_root_cause": "dns_resolution_failure",
+  "red_herring": "load_balancer_flap",
+  "evidence": [
+    {
+      "id": "E1",
+      "ts": "2026-08-23T11:01:00",
+      "source": "deploys",
+      "source_url": "https://ci.example/coredns/12",
+      "content": "coredns configmap updated; upstream forward zone typo introduced"
+    },
+    {
+      "id": "E2",
+      "ts": "2026-08-23T11:03:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/dns/errors",
+      "content": "DNS NXDOMAIN rate 0 -> 22%"
+    },
+    {
+      "id": "E3",
+      "ts": "2026-08-23T11:10:00",
+      "source": "logs",
+      "source_url": "https://logs.example/coredns",
+      "content": "coredns: SERVFAIL forwarding to bad upstream 10.0.0.999"
+    },
+    {
+      "id": "E4",
+      "ts": "2026-08-23T11:25:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/lb/health",
+      "content": "LB backend health 100% (no flap)"
+    },
+    {
+      "id": "E5",
+      "ts": "2026-08-23T11:35:00",
+      "source": "chat",
+      "source_url": "https://chat.example/inc-004",
+      "content": "on-call: 'LB healthy; DNS is returning servfail'"
+    }
+  ]
+}

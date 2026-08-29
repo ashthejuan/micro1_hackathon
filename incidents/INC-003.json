@@ -1,0 +1,45 @@
+{
+  "id": "INC-003",
+  "window_start": "2026-08-22T18:00:00",
+  "window_end": "2026-08-22T19:00:00",
+  "description": "Order processing stalled; consumers lagging after a Kafka partition rebalance.",
+  "true_root_cause": "kafka_consumer_lag",
+  "red_herring": "disk_io_saturation",
+  "evidence": [
+    {
+      "id": "E1",
+      "ts": "2026-08-22T18:02:00",
+      "source": "deploys",
+      "source_url": "https://ci.example/orders/55",
+      "content": "orders-consumer v1.9 rolled out with session.timeout.ms 30s -> 5s"
+    },
+    {
+      "id": "E2",
+      "ts": "2026-08-22T18:05:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/kafka/lag",
+      "content": "consumer lag 0 -> 4.5M messages"
+    },
+    {
+      "id": "E3",
+      "ts": "2026-08-22T18:15:00",
+      "source": "logs",
+      "source_url": "https://logs.example/orders",
+      "content": "Rebalance failed: MemberId required for session.timeout 5s < processing time"
+    },
+    {
+      "id": "E4",
+      "ts": "2026-08-22T18:30:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/disk/io",
+      "content": "disk I/O 30% (steady, no saturation)"
+    },
+    {
+      "id": "E5",
+      "ts": "2026-08-22T18:40:00",
+      "source": "chat",
+      "source_url": "https://chat.example/inc-003",
+      "content": "on-call: 'disk fine, consumers keep rebalancing and falling behind'"
+    }
+  ]
+}

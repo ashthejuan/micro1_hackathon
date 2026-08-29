@@ -1,0 +1,45 @@
+{
+  "id": "INC-009",
+  "window_start": "2026-08-28T10:00:00",
+  "window_end": "2026-08-28T11:00:00",
+  "description": "Feature rollout caused errors for a subset of users.",
+  "true_root_cause": "feature_flag_wrong",
+  "red_herring": "queue_backlog",
+  "evidence": [
+    {
+      "id": "E1",
+      "ts": "2026-08-28T10:01:00",
+      "source": "deploys",
+      "source_url": "https://ci.example/flags/19",
+      "content": "flag 'new-checkout' enabled for 100% (intended 10%)"
+    },
+    {
+      "id": "E2",
+      "ts": "2026-08-28T10:04:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/errors/byflag",
+      "content": "errors correlate 1:1 with flag=new-checkout users"
+    },
+    {
+      "id": "E3",
+      "ts": "2026-08-28T10:12:00",
+      "source": "logs",
+      "source_url": "https://logs.example/api",
+      "content": "NullPointer when new-checkout path hit uninitialized cart"
+    },
+    {
+      "id": "E4",
+      "ts": "2026-08-28T10:25:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/queue/backlog",
+      "content": "queue backlog 0 (empty)"
+    },
+    {
+      "id": "E5",
+      "ts": "2026-08-28T10:35:00",
+      "source": "chat",
+      "source_url": "https://chat.example/inc-009",
+      "content": "on-call: 'queue empty; the flag rolled to everyone'"
+    }
+  ]
+}

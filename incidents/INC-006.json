@@ -1,0 +1,45 @@
+{
+  "id": "INC-006",
+  "window_start": "2026-08-25T20:00:00",
+  "window_end": "2026-08-25T21:00:00",
+  "description": "Sudden 429s for a partner API after a config push.",
+  "true_root_cause": "rate_limit_misconfig",
+  "red_herring": "db_deadlock",
+  "evidence": [
+    {
+      "id": "E1",
+      "ts": "2026-08-25T20:01:00",
+      "source": "deploys",
+      "source_url": "https://ci.example/gateway/31",
+      "content": "gateway config: partner rate limit 5000/min -> 50/min"
+    },
+    {
+      "id": "E2",
+      "ts": "2026-08-25T20:03:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/gw/429",
+      "content": "HTTP 429 rate 0% -> 38%"
+    },
+    {
+      "id": "E3",
+      "ts": "2026-08-25T20:15:00",
+      "source": "logs",
+      "source_url": "https://logs.example/gateway",
+      "content": "rate limit exceeded for partner token pid-77"
+    },
+    {
+      "id": "E4",
+      "ts": "2026-08-25T20:25:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/db/locks",
+      "content": "DB lock wait 0ms (no deadlock)"
+    },
+    {
+      "id": "E5",
+      "ts": "2026-08-25T20:35:00",
+      "source": "chat",
+      "source_url": "https://chat.example/inc-006",
+      "content": "on-call: 'no db locks; limit got mis-set to 50/min'"
+    }
+  ]
+}

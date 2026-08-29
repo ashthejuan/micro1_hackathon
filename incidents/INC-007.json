@@ -1,0 +1,45 @@
+{
+  "id": "INC-007",
+  "window_start": "2026-08-26T07:00:00",
+  "window_end": "2026-08-26T08:00:00",
+  "description": "TLS handshake failures across services after cert rotation.",
+  "true_root_cause": "cert_expiry_tls",
+  "red_herring": "cdn_cache_miss",
+  "evidence": [
+    {
+      "id": "E1",
+      "ts": "2026-08-26T07:00:00",
+      "source": "deploys",
+      "source_url": "https://ci.example/certs/8",
+      "content": "rotated TLS cert with wrong SAN (omitted api.internal)"
+    },
+    {
+      "id": "E2",
+      "ts": "2026-08-26T07:02:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/tls/fails",
+      "content": "TLS handshake failures 0 -> 19%"
+    },
+    {
+      "id": "E3",
+      "ts": "2026-08-26T07:10:00",
+      "source": "logs",
+      "source_url": "https://logs.example/tls",
+      "content": "x509: certificate is valid for web only, not api.internal"
+    },
+    {
+      "id": "E4",
+      "ts": "2026-08-26T07:20:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/cdn/miss",
+      "content": "CDN cache miss 12% (unchanged baseline)"
+    },
+    {
+      "id": "E5",
+      "ts": "2026-08-26T07:30:00",
+      "source": "chat",
+      "source_url": "https://chat.example/inc-007",
+      "content": "on-call: 'cert SAN missing; cdn miss rate is normal'"
+    }
+  ]
+}

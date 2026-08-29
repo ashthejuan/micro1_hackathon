@@ -1,0 +1,45 @@
+{
+  "id": "INC-008",
+  "window_start": "2026-08-27T16:00:00",
+  "window_end": "2026-08-27T17:00:00",
+  "description": "Capacity oscillation; instances repeatedly terminated and respawned.",
+  "true_root_cause": "autoscaler_flap",
+  "red_herring": "memory_leak",
+  "evidence": [
+    {
+      "id": "E1",
+      "ts": "2026-08-27T16:01:00",
+      "source": "deploys",
+      "source_url": "https://ci.example/autoscale/4",
+      "content": "HPA metric switched cpu -> qps with threshold 5 (too low)"
+    },
+    {
+      "id": "E2",
+      "ts": "2026-08-27T16:05:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/hpa/events",
+      "content": "replicas oscillating 3<->30 every 60s"
+    },
+    {
+      "id": "E3",
+      "ts": "2026-08-27T16:15:00",
+      "source": "logs",
+      "source_url": "https://logs.example/hpa",
+      "content": "scale down triggered: qps 4 < 5 target"
+    },
+    {
+      "id": "E4",
+      "ts": "2026-08-27T16:30:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/mem/heap",
+      "content": "heap stable 220MB (no leak)"
+    },
+    {
+      "id": "E5",
+      "ts": "2026-08-27T16:40:00",
+      "source": "chat",
+      "source_url": "https://chat.example/inc-008",
+      "content": "on-call: 'mem fine; the HPA target is just wrong'"
+    }
+  ]
+}

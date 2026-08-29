@@ -1,0 +1,35 @@
+[
+  {
+    "incident_id": "INC-001",
+    "document": "Checkout failures and elevated payment errors after the 14:02 payment-service deploy.\nSymptoms: payment-service v2.3.1 deployed; config change payment_timeout_ms 2000 -> 200; checkout p99 latency rose 800ms -> 4.2s; checkout error rate 0.1% -> 5.3%\nRoot cause: config_timeout_drop\nAction items: review config change for config_timeout_drop",
+    "metadata": {
+      "incident_id": "INC-001",
+      "root_cause_label": "config_timeout_drop",
+      "time_approved": "2026-08-20T15:00:00",
+      "action_item_count": 1,
+      "symptom_keywords": "config,timeout,drop,db,cpu,spike"
+    }
+  },
+  {
+    "incident_id": "INC-002",
+    "document": "API latency spikes and cache hit-rate collapse after redis node maintenance.\nSymptoms: redis maxmemory lowered 8GB -> 2GB during maintenance; cache hit-rate 96% -> 41%; API p95 latency 120ms -> 900ms\nRoot cause: redis_cache_eviction\nAction items: review config change for redis_cache_eviction",
+    "metadata": {
+      "incident_id": "INC-002",
+      "root_cause_label": "redis_cache_eviction",
+      "time_approved": "2026-08-21T10:00:00",
+      "action_item_count": 1,
+      "symptom_keywords": "redis,cache,eviction,network,latency"
+    }
+  },
+  {
+    "incident_id": "INC-003",
+    "document": "Order processing stalled; consumers lagging after a Kafka partition rebalance.\nSymptoms: orders-consumer v1.9 rolled out with session.timeout.ms 30s -> 5s; consumer lag 0 -> 4.5M messages; Rebalance failed: MemberId required for session.timeout 5s < processing time\nRoot cause: kafka_consumer_lag\nAction items: review config change for kafka_consumer_lag",
+    "metadata": {
+      "incident_id": "INC-003",
+      "root_cause_label": "kafka_consumer_lag",
+      "time_approved": "2026-08-22T19:00:00",
+      "action_item_count": 1,
+      "symptom_keywords": "kafka,consumer,lag,disk,io,saturation"
+    }
+  }
+]

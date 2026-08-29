@@ -1,0 +1,45 @@
+{
+  "id": "INC-011",
+  "window_start": "2026-08-30T15:00:00",
+  "window_end": "2026-08-30T16:00:00",
+  "description": "Image uploads failing intermittently after a storage endpoint change.",
+  "true_root_cause": "s3_throttling_config",
+  "red_herring": "region_outage",
+  "evidence": [
+    {
+      "id": "E1",
+      "ts": "2026-08-30T15:01:00",
+      "source": "deploys",
+      "source_url": "https://ci.example/storage/21",
+      "content": "storage client request rate limit set 1000/s -> 10/s"
+    },
+    {
+      "id": "E2",
+      "ts": "2026-08-30T15:03:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/s3/429",
+      "content": "S3 429 SlowDown 0 -> 29%"
+    },
+    {
+      "id": "E3",
+      "ts": "2026-08-30T15:12:00",
+      "source": "logs",
+      "source_url": "https://logs.example/storage",
+      "content": "SlowDown: please reduce your request rate"
+    },
+    {
+      "id": "E4",
+      "ts": "2026-08-30T15:25:00",
+      "source": "metrics",
+      "source_url": "https://grafana.example/region/status",
+      "content": "region health GREEN (no outage)"
+    },
+    {
+      "id": "E5",
+      "ts": "2026-08-30T15:35:00",
+      "source": "chat",
+      "source_url": "https://chat.example/inc-011",
+      "content": "on-call: 'region is green; our client rate limit is just 10/s'"
+    }
+  ]
+}
