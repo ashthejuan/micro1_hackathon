@@ -321,7 +321,7 @@ def memory_doc(incident: Dict[str, Any]) -> Dict[str, Any]:
       - time_approved: str
       - action_item_count: int
       - symptom_keywords: comma-joined str
-    Phase 4's `memory.py: embed_approved(postmortem)` MUST rebuild this exact
+    Phase 4's `memory.py: embed_postmortem(postmortem)` MUST rebuild this exact
     shape from an approved Postmortem (not a re-implementation) so pre-seeded
     fixtures (memory_seed.json) and live-embedded incidents stay compatible.
     Import `memory_doc` from this module rather than duplicating it.

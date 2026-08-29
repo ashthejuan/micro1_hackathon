@@ -84,10 +84,17 @@ def init_db(conn: sqlite3.Connection) -> None:
 
 def insert_incident(conn: sqlite3.Connection, incident: dict, status: str = "running",
                     time_created: str = "1970-01-01T00:00:00") -> None:
+    # Use ON CONFLICT DO UPDATE rather than INSERT OR REPLACE: the latter deletes
+    # the existing row first, and the FK cascade (ON DELETE CASCADE) would wipe the
+    # incident's evidence and any prior postmortem/verification rows. Re-ingesting an
+    # incident (e.g. re-running eval on the same id) must NOT destroy prior data.
     conn.execute(
-        "INSERT OR REPLACE INTO incident "
+        "INSERT INTO incident "
         "(id, window_start, window_end, description, status, time_created) "
-        "VALUES (?,?,?,?,?,?)",
+        "VALUES (?,?,?,?,?,?) "
+        "ON CONFLICT(id) DO UPDATE SET "
+        "window_start=excluded.window_start, window_end=excluded.window_end, "
+        "description=excluded.description, status=excluded.status",
         (incident["id"], incident["window_start"], incident["window_end"],
          incident.get("description"), status, time_created),
     )
@@ -195,15 +202,18 @@ def insert_verification_rows(conn: sqlite3.Connection, incident_id: str,
 
 
 def upsert_postmortem(conn: sqlite3.Connection, incident_id: str, draft_json: str,
-                      verification_json: Optional[str] = None,
-                      consulted_json: Optional[str] = None,
-                      status: str = "pending_approval",
-                      time_created: str = "1970-01-01T00:00:00") -> None:
+                       verification_json: Optional[str] = None,
+                       consulted_json: Optional[str] = None,
+                       status: str = "pending_approval",
+                       approved_by: Optional[str] = None,
+                       time_approved: Optional[str] = None,
+                       time_created: str = "1970-01-01T00:00:00") -> None:
     conn.execute(
         "INSERT OR REPLACE INTO postmortem "
         "(incident_id, draft_json, verification_json, consulted_json, status, approved_by, time_approved, time_created) "
-        "VALUES (?,?,?,?,?,NULL,NULL,?)",
-        (incident_id, draft_json, verification_json, consulted_json, status, time_created),
+        "VALUES (?,?,?,?,?,?,?,?)",
+        (incident_id, draft_json, verification_json, consulted_json, status,
+         approved_by, time_approved, time_created),
     )
     conn.commit()
 

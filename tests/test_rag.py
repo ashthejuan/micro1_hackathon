@@ -27,7 +27,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from rag import _HAS_CHROMA, create_memory_collection  # noqa: E402
 from memory import (  # noqa: E402
     assert_consult_only,
-    embed_approved,
+    embed_postmortem,
     get_collection,
     recall_incidents,
     validate_consult_only,
@@ -68,7 +68,8 @@ def _collection(backend="memory"):
     )
 
 
-def _approved_postmortem(incident_id="INC-009", root_cause="feature_flag_wrong"):
+def _approved_postmortem(incident_id="INC-009", root_cause="feature_flag_wrong",
+                         action_items=None):
     return Postmortem(
         incident_id=incident_id,
         summary="Feature rollout caused errors for a subset of users.",
@@ -79,7 +80,8 @@ def _approved_postmortem(incident_id="INC-009", root_cause="feature_flag_wrong")
                           description="flag enabled for 100%",
                           evidence_refs=["E1"]),
         ],
-        action_items=["Gate flag rollout behind percentage."],
+        action_items=action_items if action_items is not None
+        else ["Gate flag rollout behind percentage."],
         claims=[Claim(statement="flag rolled to everyone",
                       evidence_refs=["E1"])],
         consulted_incidents=[],
@@ -98,13 +100,13 @@ def test_chroma_is_available_in_this_environment():
 
 
 # ---------------------------------------------------------------- metadata shape
-def test_embed_approved_metadata_is_scalar_only():
+def test_embed_postmortem_metadata_is_scalar_only():
     pm = _approved_postmortem()
-    doc = embed_approved(pm, time_approved="2026-08-29T00:00:00")
+    doc = embed_postmortem(pm, time_approved="2026-08-29T00:00:00", verification_score=0.5)
     meta = doc["metadata"]
     assert set(meta) == {
         "incident_id", "root_cause_label", "time_approved",
-        "action_item_count", "symptom_keywords",
+        "action_item_count", "symptom_keywords", "verification_score",
     }
     # Every value must be a scalar (str|int|float|bool), never list/dict/None.
     for k, v in meta.items():
@@ -115,19 +117,35 @@ def test_embed_approved_metadata_is_scalar_only():
     assert meta["incident_id"] == "INC-009"
     assert meta["root_cause_label"] == "feature_flag_wrong"
     assert meta["action_item_count"] == 1
+    assert meta["verification_score"] == 0.5
     assert meta["time_approved"] == "2026-08-29T00:00:00"
 
 
-def test_embed_approved_matches_fixture_shape():
+def test_embed_postmortem_action_item_count_is_faithful():
+    pm = _approved_postmortem(action_items=["Fix the flag.", "Add a guardrail.", "Alert on rollout."])
+    doc = embed_postmortem(pm, verification_score=1.0)
+    assert doc["metadata"]["action_item_count"] == 3
+
+
+def test_embed_postmortem_omits_score_when_unknown():
+    pm = _approved_postmortem()
+    doc = embed_postmortem(pm, time_approved="2026-08-29T00:00:00")
+    assert "verification_score" not in doc["metadata"]
+
+
+def test_embed_postmortem_matches_fixture_shape():
     """Live-embedded doc must share shape with pre-seeded memory_seed fixtures."""
     from generate_incidents import memory_seed
 
     fixture = memory_seed()[0]
     pm = _approved_postmortem(incident_id=fixture["incident_id"],
                               root_cause=fixture["metadata"]["root_cause_label"])
-    doc = embed_approved(pm, time_approved=fixture["metadata"]["time_approved"])
+    doc = embed_postmortem(pm, time_approved=fixture["metadata"]["time_approved"],
+                           verification_score=1.0)
     assert set(doc) == {"incident_id", "document", "metadata"}
-    assert set(doc["metadata"]) == set(fixture["metadata"])
+    # Base fixture keys must all be present; live docs additionally carry quality.
+    assert set(fixture["metadata"]).issubset(set(doc["metadata"]))
+    assert "verification_score" in doc["metadata"]
 
 
 # --------------------- Chroma-level boundary: non-scalar metadata is rejected -----

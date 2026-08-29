@@ -8,9 +8,15 @@ rule in `store.py`):
   2. `validate_consult_only` / `assert_consult_only` reject any postmortem whose
      `claims[].evidence_refs` contain a recalled incident id (the hard ban).
 
-`embed_approved(postmortem)` rebuilds the EXACT `incident_memory` document shape
+`embed_postmortem(postmortem)` rebuilds the EXACT `incident_memory` document shape
 produced by `generate_incidents.memory_doc` (single source of truth) so live
 embedded incidents stay compatible with the pre-seeded `memory_seed.json` fixtures.
+
+Quality is stamped into the Chroma metadata: `verification_score` (the deterministic
+backed-claim ratio) travels alongside `action_item_count` so recall can surface a
+mix of good and imperfect priors. The hard consult-only ban is enforced separately
+(`is_consult_only_leak`): a postmortem that leaks a recalled incident id into claim
+evidence is NEVER embedded, regardless of quality.
 """
 
 from __future__ import annotations
@@ -42,12 +48,16 @@ def _postmortem_to_incident(postmortem: Postmortem, time_approved: str) -> Dict[
     }
 
 
-def embed_approved(postmortem: Postmortem,
-                   time_approved: Optional[str] = None) -> Dict[str, Any]:
-    """Build the `incident_memory` doc for an approved postmortem.
+def embed_postmortem(postmortem: Postmortem,
+                     time_approved: Optional[str] = None,
+                     verification_score: Optional[float] = None) -> Dict[str, Any]:
+    """Build the `incident_memory` doc for a postmortem (approved OR imperfect).
 
     Delegates to `generate_incidents.memory_doc` so the shape matches fixtures;
-    only `time_approved` and the (empty) red-herring are reconciled afterward.
+    only `time_approved`, the (empty) red-herring, the real `action_item_count`,
+    and the quality `verification_score` are reconciled afterward. The hard
+    consult-only ban is NOT checked here — callers must refuse to embed leaks via
+    `is_consult_only_leak` (see `memory_writer_node`).
     """
     time_approved = time_approved or _now_iso()
     inc = _postmortem_to_incident(postmortem, time_approved)
@@ -58,18 +68,40 @@ def embed_approved(postmortem: Postmortem,
     doc["metadata"]["symptom_keywords"] = ",".join(
         t for t in doc["metadata"]["symptom_keywords"].split(",") if t
     )
+    # Faithful action-item count (memory_doc hardcodes 1 for the seed shape).
+    doc["metadata"]["action_item_count"] = len(postmortem.action_items)
+    # Stamp deterministic quality so recall can surface imperfect priors too.
+    if verification_score is not None:
+        doc["metadata"]["verification_score"] = float(verification_score)
     return doc
 
 
-async def store_approved(postmortem: Postmortem,
-                         collection: Any,
-                         time_approved: Optional[str] = None) -> Dict[str, Any]:
-    """Embed + persist an approved postmortem into the `incident_memory` collection."""
-    doc = embed_approved(postmortem, time_approved)
+async def store_memory(postmortem: Postmortem,
+                       collection: Any,
+                       time_approved: Optional[str] = None,
+                       verification_score: Optional[float] = None) -> Dict[str, Any]:
+    """Embed + persist a (non-leaking) postmortem into the `incident_memory` collection."""
+    doc = embed_postmortem(postmortem, time_approved, verification_score)
     await collection.add(
         id=doc["incident_id"], document=doc["document"], metadata=doc["metadata"]
     )
     return doc
+
+
+def is_consult_only_leak(postmortem: Postmortem,
+                         recalled_incident_ids: List[str]) -> bool:
+    """True if any claim cites a recalled incident id as evidence (hard ban).
+
+    Covers both the explicit `from_recalled_incident` marker and a leaked id in
+    `claims[].evidence_refs`. Such postmortems must NEVER be embedded.
+    """
+    banned = set(recalled_incident_ids)
+    for claim in postmortem.claims:
+        if claim.from_recalled_incident is not None:
+            return True
+        if set(claim.evidence_refs) & banned:
+            return True
+    return False
 
 
 async def recall_incidents(symptom_text: str,
