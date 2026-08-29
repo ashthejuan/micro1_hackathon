@@ -1,2 +1,8 @@
 pydantic>=2.0
 pytest>=8.0
+
+# --- Agentic Postmortem Synthesizer runtime deps ---
+langgraph>=0.2
+openai>=1.0
+chromadb>=0.5
+sentence-transformers>=2.7

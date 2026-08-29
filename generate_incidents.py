@@ -311,7 +311,21 @@ INCIDENTS: List[Dict[str, Any]] = [
 
 
 def memory_doc(incident: Dict[str, Any]) -> Dict[str, Any]:
-    """Build an `incident_memory` document for a single (approved) incident."""
+    """Build an `incident_memory` document for a single (approved) incident.
+
+    CONTRACT (do not diverge in Phase 4):
+    Returns {"incident_id", "document", "metadata"} where `metadata` is
+    scalar-only (str|int|float|bool) per Chroma rules:
+      - incident_id: str
+      - root_cause_label: str
+      - time_approved: str
+      - action_item_count: int
+      - symptom_keywords: comma-joined str
+    Phase 4's `memory.py: embed_approved(postmortem)` MUST rebuild this exact
+    shape from an approved Postmortem (not a re-implementation) so pre-seeded
+    fixtures (memory_seed.json) and live-embedded incidents stay compatible.
+    Import `memory_doc` from this module rather than duplicating it.
+    """
     ev = incident["evidence"]
     symptoms = "; ".join(e["content"] for e in ev[:3])
     return {
