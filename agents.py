@@ -320,9 +320,20 @@ async def verifier_node(
     consulted = state.get("consulted", [])
     recalled_ids = [c.incident_id for c in consulted]
 
-    report = verify_postmortem(
-        conn, incident_id, pm, recalled_incident_ids=recalled_ids
-    )
+    try:
+        report = verify_postmortem(
+            conn, incident_id, pm, recalled_incident_ids=recalled_ids
+        )
+    except ValueError:
+        # Consult-only violation raised by `assert_consult_only` (a recalled
+        # incident id leaked into a claim's evidence_refs or from_recalled_incident).
+        # The gate and memory_writer independently detect and refuse this leak, so
+        # we must NOT let it crash the graph: emit a zero-score report and let the
+        # downstream nodes reject/refuse cleanly. This keeps Phase 7/8 batch runs
+        # alive when a single incident leaks.
+        report = VerificationReport(
+            incident_id=incident_id, claim_reports=[], verification_score=0.0
+        )
 
     valid_ids = valid_evidence_ids(conn, incident_id)
     verifier_math = [

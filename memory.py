@@ -113,16 +113,21 @@ async def recall_incidents(symptom_text: str,
 
 
 def validate_consult_only(postmortem: Postmortem,
-                          recalled_incident_ids: List[str]) -> List[Dict[str, Any]]:
-    """Return violations where a recalled incident id leaked into `evidence_refs`.
+                           recalled_incident_ids: List[str]) -> List[Dict[str, Any]]:
+    """Return violations where a recalled incident id leaked into a claim.
 
     A recalled incident id (e.g. "INC-014") must appear only via
-    `consulted_incidents` / `from_prior_incident`, never as an evidence ref.
+    `consulted_incidents` / `from_prior_incident`, never as an evidence ref and
+    never via `from_recalled_incident`. This is the single source of truth for
+    the consult-only ban, matching `is_consult_only_leak` (memory writer) and the
+    human gate.
     """
     banned = set(recalled_incident_ids)
     violations: List[Dict[str, Any]] = []
     for i, claim in enumerate(postmortem.claims):
         leaked = [r for r in claim.evidence_refs if r in banned]
+        if claim.from_recalled_incident is not None and claim.from_recalled_incident in banned:
+            leaked = leaked + [claim.from_recalled_incident]
         if leaked:
             violations.append(
                 {"claim_index": i, "statement": claim.statement, "leaked_refs": leaked}
