@@ -11,6 +11,7 @@ from __future__ import annotations
 import sqlite3
 from typing import Iterable, List, Optional, Tuple
 
+from memory import assert_consult_only
 from schemas import Claim, ClaimVerification, Postmortem, VerificationReport
 
 SCHEMA = """
@@ -146,7 +147,18 @@ def set_check(conn: sqlite3.Connection, incident_id: str, claim: Claim) -> Tuple
 
 
 def verify_postmortem(conn: sqlite3.Connection, incident_id: str,
-                      postmortem: Postmortem) -> VerificationReport:
+                      postmortem: Postmortem,
+                      recalled_incident_ids: Optional[List[str]] = None) -> VerificationReport:
+    """Deterministic claim verification + central consult-only enforcement.
+
+    `recalled_incident_ids` are the incident ids returned by the memory recall
+    step (the recalled namespace, e.g. "INC-014"). They must NEVER be cited as
+    evidence. We enforce this centrally here: a postmortem that leaks a recalled
+    id into any `claims[].evidence_refs` is rejected outright rather than merely
+    scored down. (The `from_recalled_incident` ban is still enforced per-claim by
+    `set_check`.)
+    """
+    assert_consult_only(postmortem, recalled_incident_ids or [])
     reports: List[ClaimVerification] = []
     for i, claim in enumerate(postmortem.claims):
         backed, missing = set_check(conn, incident_id, claim)
