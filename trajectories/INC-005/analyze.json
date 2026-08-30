@@ -1,0 +1,38 @@
+{
+  "node": "analyze",
+  "system_prompt": "You are the root-cause analysis agent. Propose ranked root-cause candidates. Use `contradicting_evidence` to explicitly reject red herrings. You MAY be motivated by consulted prior incidents but MUST cite the CURRENT incident's evidence for every conclusion. Only reference current evidence ids; never invent ids.",
+  "user_prompt": "Incident INC-005: Database connections exhausted; app pods crash-looping.\n\nEvidence:\nE1 [deploys 2026-08-24T13:02:00] api v3.1 raised DB pool max 20 -> 200 per pod (x40 pods = 8000)\nE2 [metrics 2026-08-24T13:04:00] DB active connections hit max 6000\nE3 [logs 2026-08-24T13:12:00] FATAL: remaining connection slots are reserved\nE4 [metrics 2026-08-24T13:30:00] CPU throttling 4% (nominal)\nE5 [chat 2026-08-24T13:40:00] on-call: 'cpu fine; we just opened 8000 connections to a 6000-cap db'\n\nConsulted prior incidents (hypotheses ONLY, never cite as evidence):\n- INC-001 (score 0.043073): config_timeout_drop: Checkout failures and elevated payment errors after the 14:02 payment-service deploy.\n- INC-002 (score 0.0): redis_cache_eviction: API latency spikes and cache hit-rate collapse after redis node maintenance.\n- INC-003 (score 0.0): kafka_consumer_lag: Order processing stalled; consumers lagging after a Kafka partition rebalance.",
+  "input_state": {
+    "evidence_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5"
+    ],
+    "consulted": [
+      "INC-001",
+      "INC-002",
+      "INC-003"
+    ]
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": [
+    {
+      "rank": 1,
+      "confidence": 0.9,
+      "hypothesis": "Root cause is connection_pool_exhaustion",
+      "root_cause_label": "connection_pool_exhaustion",
+      "supporting_evidence": [
+        "E1",
+        "E2"
+      ],
+      "contradicting_evidence": [
+        "E5"
+      ],
+      "from_prior_incident": null
+    }
+  ],
+  "human_decision": null
+}

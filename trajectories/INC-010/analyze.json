@@ -1,0 +1,38 @@
+{
+  "node": "analyze",
+  "system_prompt": "You are the root-cause analysis agent. Propose ranked root-cause candidates. Use `contradicting_evidence` to explicitly reject red herrings. You MAY be motivated by consulted prior incidents but MUST cite the CURRENT incident's evidence for every conclusion. Only reference current evidence ids; never invent ids.",
+  "user_prompt": "Incident INC-010: Upstream gRPC calls timing out after an upstream service upgrade.\n\nEvidence:\nE1 [deploys 2026-08-29T12:01:00] upstream inventory-svc upgraded; grpc keepalive tightened\nE2 [metrics 2026-08-29T12:03:00] grpc deadline_exceeded 0 -> 17%\nE3 [logs 2026-08-29T12:12:00] received RST_STREAM after 100ms keepalive on inventory-svc\nE4 [metrics 2026-08-29T12:25:00] node memory 55% (no OOM)\nE5 [chat 2026-08-29T12:35:00] on-call: 'no oom; upstream grpc keepalive is killing streams'\n\nConsulted prior incidents (hypotheses ONLY, never cite as evidence):\n- INC-002 (score 0.186339): redis_cache_eviction: API latency spikes and cache hit-rate collapse after redis node maintenance.\n- INC-001 (score 0.098693): config_timeout_drop: Checkout failures and elevated payment errors after the 14:02 payment-service deploy.\n- INC-003 (score 0.067574): kafka_consumer_lag: Order processing stalled; consumers lagging after a Kafka partition rebalance.",
+  "input_state": {
+    "evidence_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5"
+    ],
+    "consulted": [
+      "INC-002",
+      "INC-001",
+      "INC-003"
+    ]
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": [
+    {
+      "rank": 1,
+      "confidence": 0.9,
+      "hypothesis": "Root cause is grpc_upstream_timeout",
+      "root_cause_label": "grpc_upstream_timeout",
+      "supporting_evidence": [
+        "E1",
+        "E2"
+      ],
+      "contradicting_evidence": [
+        "E5"
+      ],
+      "from_prior_incident": null
+    }
+  ],
+  "human_decision": null
+}

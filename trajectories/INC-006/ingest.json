@@ -1,0 +1,31 @@
+{
+  "node": "ingest",
+  "system_prompt": "ingest node (no LLM; writes evidence and fires memory recall)",
+  "user_prompt": "",
+  "input_state": {
+    "incident_id": "INC-006",
+    "evidence_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5"
+    ]
+  },
+  "tool_calls": [
+    {
+      "tool": "recall_incidents",
+      "args": {
+        "symptom_text": "Sudden 429s for a partner API after a config push.",
+        "n": 5
+      },
+      "response": "<async recall task fired>"
+    }
+  ],
+  "retries": [],
+  "output": {
+    "incident_id": "INC-006",
+    "recall_fired": true
+  },
+  "human_decision": null
+}

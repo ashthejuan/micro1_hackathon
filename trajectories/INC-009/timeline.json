@@ -1,0 +1,33 @@
+{
+  "node": "timeline",
+  "system_prompt": "You are the timeline agent. Reconstruct a chronological timeline strictly from the supplied evidence. Only reference evidence ids that appear in the evidence list; never invent ids.",
+  "user_prompt": "Incident INC-009: Feature rollout caused errors for a subset of users.\n\nEvidence:\nE1 [deploys 2026-08-28T10:01:00] flag 'new-checkout' enabled for 100% (intended 10%)\nE2 [metrics 2026-08-28T10:04:00] errors correlate 1:1 with flag=new-checkout users\nE3 [logs 2026-08-28T10:12:00] NullPointer when new-checkout path hit uninitialized cart\nE4 [metrics 2026-08-28T10:25:00] queue backlog 0 (empty)\nE5 [chat 2026-08-28T10:35:00] on-call: 'queue empty; the flag rolled to everyone'",
+  "input_state": {
+    "evidence_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5"
+    ]
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": [
+    {
+      "ts": "2026-08-28T10:01:00",
+      "description": "flag 'new-checkout' enabled for 100% (intended 10%)",
+      "evidence_refs": [
+        "E1"
+      ]
+    },
+    {
+      "ts": "2026-08-28T10:04:00",
+      "description": "errors correlate 1:1 with flag=new-checkout users",
+      "evidence_refs": [
+        "E2"
+      ]
+    }
+  ],
+  "human_decision": null
+}

@@ -10,3 +10,4 @@ env/
 .chroma/
 fixtures/llm_cache.jsonl
 .agents/
+.env

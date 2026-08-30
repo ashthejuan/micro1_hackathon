@@ -1,0 +1,84 @@
+{
+  "node": "writer",
+  "system_prompt": "You are the postmortem writer. Produce a publishable postmortem. Every Claim must have non-empty `evidence_refs` that are REAL ids from the supplied evidence list only. Never invent ids. Set `from_recalled_incident` only when a claim is motivated by a consulted prior incident (it is then excluded from verification).",
+  "user_prompt": "Incident INC-010: Upstream gRPC calls timing out after an upstream service upgrade.\n\nTimeline:\n- 2026-08-29T12:01:00: upstream inventory-svc upgraded; grpc keepalive tightened (refs ['E1'])\n- 2026-08-29T12:03:00: grpc deadline_exceeded 0 -> 17% (refs ['E2'])\n\nRoot-cause candidates:\n- 1. Root cause is grpc_upstream_timeout (label=grpc_upstream_timeout, support=['E1', 'E2'], contradict=['E5'])\n\nConsulted prior incidents (hypotheses ONLY): ['INC-002', 'INC-001', 'INC-003']",
+  "input_state": {
+    "valid_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5"
+    ],
+    "consulted": [
+      "INC-002",
+      "INC-001",
+      "INC-003"
+    ]
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": {
+    "incident_id": "INC-010",
+    "summary": "Postmortem for INC-010: Upstream gRPC calls timing out after an upstream service upgrade.",
+    "impact": "Incident INC-010 impact derived from evidence E1.",
+    "root_cause": "grpc_upstream_timeout",
+    "timeline": [
+      {
+        "ts": "2026-08-29T12:01:00",
+        "description": "upstream inventory-svc upgraded; grpc keepalive tightened",
+        "evidence_refs": [
+          "E1"
+        ]
+      },
+      {
+        "ts": "2026-08-29T12:03:00",
+        "description": "grpc deadline_exceeded 0 -> 17%",
+        "evidence_refs": [
+          "E2"
+        ]
+      }
+    ],
+    "action_items": [
+      "Mitigate grpc_upstream_timeout per evidence E1."
+    ],
+    "claims": [
+      {
+        "statement": "Root cause grpc_upstream_timeout evidenced by E1",
+        "evidence_refs": [
+          "E1",
+          "E2"
+        ],
+        "from_recalled_incident": null
+      },
+      {
+        "statement": "Red-herring observation E5 was coincidental",
+        "evidence_refs": [
+          "E5"
+        ],
+        "from_recalled_incident": null
+      }
+    ],
+    "consulted_incidents": [
+      {
+        "incident_id": "INC-002",
+        "similarity_score": 0.186339,
+        "applied": false,
+        "note": "redis_cache_eviction: API latency spikes and cache hit-rate collapse after redis node maintenance."
+      },
+      {
+        "incident_id": "INC-001",
+        "similarity_score": 0.098693,
+        "applied": false,
+        "note": "config_timeout_drop: Checkout failures and elevated payment errors after the 14:02 payment-service deploy."
+      },
+      {
+        "incident_id": "INC-003",
+        "similarity_score": 0.067574,
+        "applied": false,
+        "note": "kafka_consumer_lag: Order processing stalled; consumers lagging after a Kafka partition rebalance."
+      }
+    ]
+  },
+  "human_decision": null
+}

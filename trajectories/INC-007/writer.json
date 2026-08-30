@@ -1,0 +1,84 @@
+{
+  "node": "writer",
+  "system_prompt": "You are the postmortem writer. Produce a publishable postmortem. Every Claim must have non-empty `evidence_refs` that are REAL ids from the supplied evidence list only. Never invent ids. Set `from_recalled_incident` only when a claim is motivated by a consulted prior incident (it is then excluded from verification).",
+  "user_prompt": "Incident INC-007: TLS handshake failures across services after cert rotation.\n\nTimeline:\n- 2026-08-26T07:00:00: rotated TLS cert with wrong SAN (omitted api.internal) (refs ['E1'])\n- 2026-08-26T07:02:00: TLS handshake failures 0 -> 19% (refs ['E2'])\n\nRoot-cause candidates:\n- 1. Root cause is cert_expiry_tls (label=cert_expiry_tls, support=['E1', 'E2'], contradict=['E5'])\n\nConsulted prior incidents (hypotheses ONLY): ['INC-003', 'INC-001', 'INC-002']",
+  "input_state": {
+    "valid_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5"
+    ],
+    "consulted": [
+      "INC-003",
+      "INC-001",
+      "INC-002"
+    ]
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": {
+    "incident_id": "INC-007",
+    "summary": "Postmortem for INC-007: TLS handshake failures across services after cert rotation.",
+    "impact": "Incident INC-007 impact derived from evidence E1.",
+    "root_cause": "cert_expiry_tls",
+    "timeline": [
+      {
+        "ts": "2026-08-26T07:00:00",
+        "description": "rotated TLS cert with wrong SAN (omitted api.internal)",
+        "evidence_refs": [
+          "E1"
+        ]
+      },
+      {
+        "ts": "2026-08-26T07:02:00",
+        "description": "TLS handshake failures 0 -> 19%",
+        "evidence_refs": [
+          "E2"
+        ]
+      }
+    ],
+    "action_items": [
+      "Mitigate cert_expiry_tls per evidence E1."
+    ],
+    "claims": [
+      {
+        "statement": "Root cause cert_expiry_tls evidenced by E1",
+        "evidence_refs": [
+          "E1",
+          "E2"
+        ],
+        "from_recalled_incident": null
+      },
+      {
+        "statement": "Red-herring observation E5 was coincidental",
+        "evidence_refs": [
+          "E5"
+        ],
+        "from_recalled_incident": null
+      }
+    ],
+    "consulted_incidents": [
+      {
+        "incident_id": "INC-003",
+        "similarity_score": 0.124141,
+        "applied": false,
+        "note": "kafka_consumer_lag: Order processing stalled; consumers lagging after a Kafka partition rebalance."
+      },
+      {
+        "incident_id": "INC-001",
+        "similarity_score": 0.080582,
+        "applied": false,
+        "note": "config_timeout_drop: Checkout failures and elevated payment errors after the 14:02 payment-service deploy."
+      },
+      {
+        "incident_id": "INC-002",
+        "similarity_score": 0.045644,
+        "applied": false,
+        "note": "redis_cache_eviction: API latency spikes and cache hit-rate collapse after redis node maintenance."
+      }
+    ]
+  },
+  "human_decision": null
+}

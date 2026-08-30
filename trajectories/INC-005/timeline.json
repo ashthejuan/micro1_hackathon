@@ -1,0 +1,33 @@
+{
+  "node": "timeline",
+  "system_prompt": "You are the timeline agent. Reconstruct a chronological timeline strictly from the supplied evidence. Only reference evidence ids that appear in the evidence list; never invent ids.",
+  "user_prompt": "Incident INC-005: Database connections exhausted; app pods crash-looping.\n\nEvidence:\nE1 [deploys 2026-08-24T13:02:00] api v3.1 raised DB pool max 20 -> 200 per pod (x40 pods = 8000)\nE2 [metrics 2026-08-24T13:04:00] DB active connections hit max 6000\nE3 [logs 2026-08-24T13:12:00] FATAL: remaining connection slots are reserved\nE4 [metrics 2026-08-24T13:30:00] CPU throttling 4% (nominal)\nE5 [chat 2026-08-24T13:40:00] on-call: 'cpu fine; we just opened 8000 connections to a 6000-cap db'",
+  "input_state": {
+    "evidence_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5"
+    ]
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": [
+    {
+      "ts": "2026-08-24T13:02:00",
+      "description": "api v3.1 raised DB pool max 20 -> 200 per pod (x40 pods = 8000)",
+      "evidence_refs": [
+        "E1"
+      ]
+    },
+    {
+      "ts": "2026-08-24T13:04:00",
+      "description": "DB active connections hit max 6000",
+      "evidence_refs": [
+        "E2"
+      ]
+    }
+  ],
+  "human_decision": null
+}

@@ -1,0 +1,78 @@
+{
+  "node": "verifier",
+  "system_prompt": "verifier node (deterministic SQLite set-check, no LLM)",
+  "user_prompt": "",
+  "input_state": {
+    "incident_id": "INC-004",
+    "recalled_ids": [
+      "INC-001",
+      "INC-002",
+      "INC-003"
+    ]
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": {
+    "incident_id": "INC-004",
+    "claim_reports": [
+      {
+        "claim_index": 0,
+        "statement": "Root cause dns_resolution_failure evidenced by E1",
+        "evidence_refs": [
+          "E1",
+          "E2"
+        ],
+        "from_recalled_incident": null,
+        "backed": true,
+        "missing_evidence": []
+      },
+      {
+        "claim_index": 1,
+        "statement": "Red-herring observation E5 was coincidental",
+        "evidence_refs": [
+          "E5"
+        ],
+        "from_recalled_incident": null,
+        "backed": true,
+        "missing_evidence": []
+      }
+    ],
+    "verification_score": 1.0
+  },
+  "human_decision": null,
+  "verifier_math": [
+    {
+      "claim_index": 0,
+      "claimed_refs": [
+        "E1",
+        "E2"
+      ],
+      "valid_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5"
+      ],
+      "from_recalled_incident": null,
+      "backed": true,
+      "missing_evidence": []
+    },
+    {
+      "claim_index": 1,
+      "claimed_refs": [
+        "E5"
+      ],
+      "valid_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5"
+      ],
+      "from_recalled_incident": null,
+      "backed": true,
+      "missing_evidence": []
+    }
+  ]
+}

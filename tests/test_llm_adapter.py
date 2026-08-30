@@ -164,3 +164,97 @@ def test_live_call_appends_fixture(tmp_path, monkeypatch):
     with open(a.cache_path, "r", encoding="utf-8") as fh:
         lines = [json.loads(l) for l in fh if l.strip()]
     assert len(lines) == 1 and lines[0]["response"]["incident_id"] == "INC-003"
+
+
+# ------------------------------------------------------------------ _parse_chat List[X] robustness (live-path bug)
+# The live API with response_format=json_object always returns a JSON object,
+# even for List[X] schemas that want an array.  _parse_chat must handle both.
+def test_parse_chat_list_array_ok():
+    from typing import List
+
+    from schemas import TimelineEvent
+
+    data = json.dumps([{"ts": "2026-08-20T14:02:00", "description": "deploy", "evidence_refs": ["E1"]}])
+    out = LLMAdapter._parse_chat(data, List[TimelineEvent])
+    assert isinstance(out, list)
+    assert isinstance(out[0], TimelineEvent)
+    assert out[0].evidence_refs == ["E1"]
+
+
+def test_parse_chat_list_object_wrapper_events_key():
+    from typing import List
+
+    from schemas import TimelineEvent
+
+    data = json.dumps({"events": [{"ts": "2026-08-20T14:02:00", "description": "deploy", "evidence_refs": ["E1"]}]})
+    out = LLMAdapter._parse_chat(data, List[TimelineEvent])
+    assert isinstance(out, list) and isinstance(out[0], TimelineEvent)
+
+
+def test_parse_chat_list_object_wrapper_items_key():
+    from typing import List
+
+    from schemas import TimelineEvent
+
+    data = json.dumps({"items": [{"ts": "2026-08-20T14:02:00", "description": "deploy", "evidence_refs": ["E1"]}]})
+    out = LLMAdapter._parse_chat(data, List[TimelineEvent])
+    assert isinstance(out[0], TimelineEvent)
+
+
+def test_parse_chat_list_object_wrapper_candidates_key():
+    from typing import List
+
+    from schemas import RootCauseCandidate
+
+    data = json.dumps(
+        {"candidates": [{"rank": 1, "confidence": 0.9, "hypothesis": "h", "root_cause_label": "config_timeout_drop", "supporting_evidence": ["E1"], "contradicting_evidence": ["E2"]}]}
+    )
+    out = LLMAdapter._parse_chat(data, List[RootCauseCandidate])
+    assert out[0].root_cause_label == "config_timeout_drop"
+
+
+def test_parse_chat_list_object_generic_single_list_fallback():
+    from typing import List
+
+    from schemas import TimelineEvent
+
+    data = json.dumps({"my_wrapper": [{"ts": "2026-08-20T14:02:00", "description": "deploy", "evidence_refs": ["E1"]}]})
+    out = LLMAdapter._parse_chat(data, List[TimelineEvent])
+    assert isinstance(out, list) and len(out) == 1
+
+
+def test_parse_chat_list_object_invalid_raises_value_error_not_attribute_error():
+    from typing import List
+
+    from schemas import TimelineEvent
+
+    data = json.dumps({"foo": "bar"})
+    with pytest.raises(ValueError, match="Failed to parse"):
+        LLMAdapter._parse_chat(data, List[TimelineEvent])
+    # Ensure the original bug (AttributeError: type object 'list' has no attribute 'model_validate') is gone
+    try:
+        LLMAdapter._parse_chat(data, List[TimelineEvent])
+    except AttributeError as exc:
+        pytest.fail(f"should not raise AttributeError, got {exc}")
+    except ValueError:
+        pass
+
+
+def test_parse_chat_list_direct_python_list_not_string():
+    from typing import List
+
+    from schemas import TimelineEvent
+
+    data = [{"ts": "2026-08-20T14:02:00", "description": "deploy", "evidence_refs": ["E1"]}]
+    out = LLMAdapter._parse_chat(data, List[TimelineEvent])
+    assert out[0].ts == "2026-08-20T14:02:00"
+
+
+def test_parse_chat_list_direct_python_dict_wrapper():
+    from typing import List
+
+    from schemas import TimelineEvent
+
+    data = {"timeline": [{"ts": "2026-08-20T14:02:00", "description": "deploy", "evidence_refs": ["E1"]}]}
+    out = LLMAdapter._parse_chat(data, List[TimelineEvent])
+    assert isinstance(out, list) and out[0].description == "deploy"

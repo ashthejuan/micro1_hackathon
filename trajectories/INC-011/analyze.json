@@ -1,0 +1,38 @@
+{
+  "node": "analyze",
+  "system_prompt": "You are the root-cause analysis agent. Propose ranked root-cause candidates. Use `contradicting_evidence` to explicitly reject red herrings. You MAY be motivated by consulted prior incidents but MUST cite the CURRENT incident's evidence for every conclusion. Only reference current evidence ids; never invent ids.",
+  "user_prompt": "Incident INC-011: Image uploads failing intermittently after a storage endpoint change.\n\nEvidence:\nE1 [deploys 2026-08-30T15:01:00] storage client request rate limit set 1000/s -> 10/s\nE2 [metrics 2026-08-30T15:03:00] S3 429 SlowDown 0 -> 29%\nE3 [logs 2026-08-30T15:12:00] SlowDown: please reduce your request rate\nE4 [metrics 2026-08-30T15:25:00] region health GREEN (no outage)\nE5 [chat 2026-08-30T15:35:00] on-call: 'region is green; our client rate limit is just 10/s'\n\nConsulted prior incidents (hypotheses ONLY, never cite as evidence):\n- INC-003 (score 0.195069): kafka_consumer_lag: Order processing stalled; consumers lagging after a Kafka partition rebalance.\n- INC-001 (score 0.189934): config_timeout_drop: Checkout failures and elevated payment errors after the 14:02 payment-service deploy.\n- INC-002 (score 0.172133): redis_cache_eviction: API latency spikes and cache hit-rate collapse after redis node maintenance.",
+  "input_state": {
+    "evidence_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5"
+    ],
+    "consulted": [
+      "INC-003",
+      "INC-001",
+      "INC-002"
+    ]
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": [
+    {
+      "rank": 1,
+      "confidence": 0.9,
+      "hypothesis": "Root cause is s3_throttling_config",
+      "root_cause_label": "s3_throttling_config",
+      "supporting_evidence": [
+        "E1",
+        "E2"
+      ],
+      "contradicting_evidence": [
+        "E5"
+      ],
+      "from_prior_incident": null
+    }
+  ],
+  "human_decision": null
+}

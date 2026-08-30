@@ -1,0 +1,24 @@
+{
+  "node": "memory_writer",
+  "system_prompt": "memory_writer node (embed postmortems into incident_memory)",
+  "user_prompt": "",
+  "input_state": {
+    "incident_id": "INC-005",
+    "verification_score": 1.0
+  },
+  "tool_calls": [
+    {
+      "tool": "store_memory",
+      "args": {
+        "incident_id": "INC-005",
+        "verification_score": 1.0
+      },
+      "response": "embedded into incident_memory"
+    }
+  ],
+  "retries": [],
+  "output": {
+    "embedded": true
+  },
+  "human_decision": null
+}

@@ -114,7 +114,14 @@ class LLMAdapter:
         if schema is None:
             return ""
         try:
-            return LLMAdapter._stable(getattr(schema, "model_json_schema", lambda: "")())
+            if hasattr(schema, "model_json_schema"):
+                return LLMAdapter._stable(schema.model_json_schema())
+        except Exception:
+            pass
+        try:
+            from pydantic import TypeAdapter
+
+            return LLMAdapter._stable(TypeAdapter(schema).json_schema())
         except Exception:  # pragma: no cover
             return getattr(schema, "__name__", str(schema))
 
@@ -123,9 +130,17 @@ class LLMAdapter:
         if schema is None:
             return ""
         try:
-            js = schema.model_json_schema()
+            if hasattr(schema, "model_json_schema"):
+                js = schema.model_json_schema()
+            else:
+                raise AttributeError("no model_json_schema")
         except Exception:
-            return ""
+            try:
+                from pydantic import TypeAdapter
+
+                js = TypeAdapter(schema).json_schema()
+            except Exception:
+                return ""
         return (
             "\n\nRespond with a single JSON object and no prose, conforming exactly to "
             "this JSON schema:\n" + json.dumps(js, ensure_ascii=False)
@@ -168,8 +183,23 @@ class LLMAdapter:
 
         content = await self._live_chat(full_system, messages, model, params)
         parsed = self._parse_chat(content, schema, raw=True)
-        # Persist the parsed object (dict | str) so replay never re-parses.
-        self._append(request_hash, parsed if schema is None else parsed.model_dump())
+        # Persist the parsed object so replay never re-parses.
+        # For List[Model] schemas the parsed value is a list; use TypeAdapter dump.
+        if schema is None:
+            to_store = parsed
+        else:
+            try:
+                # BaseModel instance
+                to_store = parsed.model_dump()  # type: ignore
+            except AttributeError:
+                # List[BaseModel] or other generic — serialize each element
+                try:
+                    from pydantic import TypeAdapter
+
+                    to_store = TypeAdapter(schema).dump_python(parsed)
+                except Exception:
+                    to_store = parsed
+        self._append(request_hash, to_store)
         return parsed
 
     async def _live_chat(
@@ -181,6 +211,11 @@ class LLMAdapter:
     ) -> str:
         if self.client is None:  # pragma: no cover
             self.client = self._build_client()
+        # OpenAI's json_object mode requires the word "json" in the prompt.
+        # Ensure it is present so the live path does not 400 when system prompts
+        # are plain instructions (agents currently say "You are the timeline agent...").
+        if "json" not in system.lower():
+            system = system + "\n\nRespond with JSON."
         kwargs: Dict[str, Any] = {
             "model": model,
             "messages": [{"role": "system", "content": system}] + list(messages),
@@ -197,8 +232,66 @@ class LLMAdapter:
             return data
         if isinstance(data, str):
             data = json.loads(data)
-        obj = schema.model_validate(data)
-        return obj
+        # Direct BaseModel
+        if hasattr(schema, "model_validate"):
+            return schema.model_validate(data)
+        # Generic like List[Model] — use TypeAdapter
+        try:
+            from pydantic import TypeAdapter
+
+            adapter = TypeAdapter(schema)
+            return adapter.validate_python(data)
+        except Exception as orig_exc:
+            # When response_format=json_object is used (llm_adapter line 190),
+            # the live API always returns a JSON object, even for List[X] schemas
+            # that logically want an array.  Try to unwrap a dict-wrapped list
+            # before giving up — this makes object-vs-array robust.
+            if isinstance(data, dict):
+                # Known wrapper keys (including generic envelope keys)
+                for key in (
+                    "events",
+                    "timeline",
+                    "timeline_events",
+                    "candidates",
+                    "root_cause_candidates",
+                    "items",
+                    "data",
+                    "results",
+                    "values",
+                ):
+                    if key in data and isinstance(data[key], list):
+                        try:
+                            from pydantic import TypeAdapter as _TA
+
+                            return _TA(schema).validate_python(data[key])
+                        except Exception:
+                            continue
+                # Fallback: dict with a single list value — use that list
+                list_vals = [v for v in data.values() if isinstance(v, list)]
+                if len(list_vals) == 1:
+                    try:
+                        from pydantic import TypeAdapter as _TA
+
+                        return _TA(schema).validate_python(list_vals[0])
+                    except Exception:
+                        pass
+                # Last resort: single-key dict whose sole value is a list
+                if len(data) == 1:
+                    sole = next(iter(data.values()))
+                    if isinstance(sole, list):
+                        try:
+                            from pydantic import TypeAdapter as _TA
+
+                            return _TA(schema).validate_python(sole)
+                        except Exception:
+                            pass
+            # Never call schema.model_validate on a generic alias like List[X]:
+            # list has no attribute model_validate and would raise a confusing
+            # AttributeError.  Raise a clear ValueError that preserves the
+            # original validation cause.
+            raise ValueError(
+                f"Failed to parse chat response for schema {schema!r}: {orig_exc}"
+            ) from orig_exc
 
     # ------------------------------------------------------------------ embed
     async def embed(self, texts: List[str], model: Optional[str] = None) -> List[List[float]]:

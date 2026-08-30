@@ -1,0 +1,6 @@
+{
+  "incident_id": "INC-004",
+  "agents": [
+    "ingest"
+  ]
+}

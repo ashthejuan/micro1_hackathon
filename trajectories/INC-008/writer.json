@@ -1,0 +1,84 @@
+{
+  "node": "writer",
+  "system_prompt": "You are the postmortem writer. Produce a publishable postmortem. Every Claim must have non-empty `evidence_refs` that are REAL ids from the supplied evidence list only. Never invent ids. Set `from_recalled_incident` only when a claim is motivated by a consulted prior incident (it is then excluded from verification).",
+  "user_prompt": "Incident INC-008: Capacity oscillation; instances repeatedly terminated and respawned.\n\nTimeline:\n- 2026-08-27T16:01:00: HPA metric switched cpu -> qps with threshold 5 (too low) (refs ['E1'])\n- 2026-08-27T16:05:00: replicas oscillating 3<->30 every 60s (refs ['E2'])\n\nRoot-cause candidates:\n- 1. Root cause is autoscaler_flap (label=autoscaler_flap, support=['E1', 'E2'], contradict=['E5'])\n\nConsulted prior incidents (hypotheses ONLY): ['INC-001', 'INC-002', 'INC-003']",
+  "input_state": {
+    "valid_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5"
+    ],
+    "consulted": [
+      "INC-001",
+      "INC-002",
+      "INC-003"
+    ]
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": {
+    "incident_id": "INC-008",
+    "summary": "Postmortem for INC-008: Capacity oscillation; instances repeatedly terminated and respawned.",
+    "impact": "Incident INC-008 impact derived from evidence E1.",
+    "root_cause": "autoscaler_flap",
+    "timeline": [
+      {
+        "ts": "2026-08-27T16:01:00",
+        "description": "HPA metric switched cpu -> qps with threshold 5 (too low)",
+        "evidence_refs": [
+          "E1"
+        ]
+      },
+      {
+        "ts": "2026-08-27T16:05:00",
+        "description": "replicas oscillating 3<->30 every 60s",
+        "evidence_refs": [
+          "E2"
+        ]
+      }
+    ],
+    "action_items": [
+      "Mitigate autoscaler_flap per evidence E1."
+    ],
+    "claims": [
+      {
+        "statement": "Root cause autoscaler_flap evidenced by E1",
+        "evidence_refs": [
+          "E1",
+          "E2"
+        ],
+        "from_recalled_incident": null
+      },
+      {
+        "statement": "Red-herring observation E5 was coincidental",
+        "evidence_refs": [
+          "E5"
+        ],
+        "from_recalled_incident": null
+      }
+    ],
+    "consulted_incidents": [
+      {
+        "incident_id": "INC-001",
+        "similarity_score": 0.129219,
+        "applied": false,
+        "note": "config_timeout_drop: Checkout failures and elevated payment errors after the 14:02 payment-service deploy."
+      },
+      {
+        "incident_id": "INC-002",
+        "similarity_score": 0.048795,
+        "applied": false,
+        "note": "redis_cache_eviction: API latency spikes and cache hit-rate collapse after redis node maintenance."
+      },
+      {
+        "incident_id": "INC-003",
+        "similarity_score": 0.0,
+        "applied": false,
+        "note": "kafka_consumer_lag: Order processing stalled; consumers lagging after a Kafka partition rebalance."
+      }
+    ]
+  },
+  "human_decision": null
+}

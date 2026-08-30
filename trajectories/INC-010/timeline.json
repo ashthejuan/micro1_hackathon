@@ -1,0 +1,33 @@
+{
+  "node": "timeline",
+  "system_prompt": "You are the timeline agent. Reconstruct a chronological timeline strictly from the supplied evidence. Only reference evidence ids that appear in the evidence list; never invent ids.",
+  "user_prompt": "Incident INC-010: Upstream gRPC calls timing out after an upstream service upgrade.\n\nEvidence:\nE1 [deploys 2026-08-29T12:01:00] upstream inventory-svc upgraded; grpc keepalive tightened\nE2 [metrics 2026-08-29T12:03:00] grpc deadline_exceeded 0 -> 17%\nE3 [logs 2026-08-29T12:12:00] received RST_STREAM after 100ms keepalive on inventory-svc\nE4 [metrics 2026-08-29T12:25:00] node memory 55% (no OOM)\nE5 [chat 2026-08-29T12:35:00] on-call: 'no oom; upstream grpc keepalive is killing streams'",
+  "input_state": {
+    "evidence_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5"
+    ]
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": [
+    {
+      "ts": "2026-08-29T12:01:00",
+      "description": "upstream inventory-svc upgraded; grpc keepalive tightened",
+      "evidence_refs": [
+        "E1"
+      ]
+    },
+    {
+      "ts": "2026-08-29T12:03:00",
+      "description": "grpc deadline_exceeded 0 -> 17%",
+      "evidence_refs": [
+        "E2"
+      ]
+    }
+  ],
+  "human_decision": null
+}

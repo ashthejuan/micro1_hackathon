@@ -1,0 +1,38 @@
+{
+  "node": "analyze",
+  "system_prompt": "You are the root-cause analysis agent. Propose ranked root-cause candidates. Use `contradicting_evidence` to explicitly reject red herrings. You MAY be motivated by consulted prior incidents but MUST cite the CURRENT incident's evidence for every conclusion. Only reference current evidence ids; never invent ids.",
+  "user_prompt": "Incident INC-007: TLS handshake failures across services after cert rotation.\n\nEvidence:\nE1 [deploys 2026-08-26T07:00:00] rotated TLS cert with wrong SAN (omitted api.internal)\nE2 [metrics 2026-08-26T07:02:00] TLS handshake failures 0 -> 19%\nE3 [logs 2026-08-26T07:10:00] x509: certificate is valid for web only, not api.internal\nE4 [metrics 2026-08-26T07:20:00] CDN cache miss 12% (unchanged baseline)\nE5 [chat 2026-08-26T07:30:00] on-call: 'cert SAN missing; cdn miss rate is normal'\n\nConsulted prior incidents (hypotheses ONLY, never cite as evidence):\n- INC-003 (score 0.124141): kafka_consumer_lag: Order processing stalled; consumers lagging after a Kafka partition rebalance.\n- INC-001 (score 0.080582): config_timeout_drop: Checkout failures and elevated payment errors after the 14:02 payment-service deploy.\n- INC-002 (score 0.045644): redis_cache_eviction: API latency spikes and cache hit-rate collapse after redis node maintenance.",
+  "input_state": {
+    "evidence_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5"
+    ],
+    "consulted": [
+      "INC-003",
+      "INC-001",
+      "INC-002"
+    ]
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": [
+    {
+      "rank": 1,
+      "confidence": 0.9,
+      "hypothesis": "Root cause is cert_expiry_tls",
+      "root_cause_label": "cert_expiry_tls",
+      "supporting_evidence": [
+        "E1",
+        "E2"
+      ],
+      "contradicting_evidence": [
+        "E5"
+      ],
+      "from_prior_incident": null
+    }
+  ],
+  "human_decision": null
+}

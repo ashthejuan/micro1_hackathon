@@ -1,0 +1,33 @@
+{
+  "node": "timeline",
+  "system_prompt": "You are the timeline agent. Reconstruct a chronological timeline strictly from the supplied evidence. Only reference evidence ids that appear in the evidence list; never invent ids.",
+  "user_prompt": "Incident INC-008: Capacity oscillation; instances repeatedly terminated and respawned.\n\nEvidence:\nE1 [deploys 2026-08-27T16:01:00] HPA metric switched cpu -> qps with threshold 5 (too low)\nE2 [metrics 2026-08-27T16:05:00] replicas oscillating 3<->30 every 60s\nE3 [logs 2026-08-27T16:15:00] scale down triggered: qps 4 < 5 target\nE4 [metrics 2026-08-27T16:30:00] heap stable 220MB (no leak)\nE5 [chat 2026-08-27T16:40:00] on-call: 'mem fine; the HPA target is just wrong'",
+  "input_state": {
+    "evidence_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5"
+    ]
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": [
+    {
+      "ts": "2026-08-27T16:01:00",
+      "description": "HPA metric switched cpu -> qps with threshold 5 (too low)",
+      "evidence_refs": [
+        "E1"
+      ]
+    },
+    {
+      "ts": "2026-08-27T16:05:00",
+      "description": "replicas oscillating 3<->30 every 60s",
+      "evidence_refs": [
+        "E2"
+      ]
+    }
+  ],
+  "human_decision": null
+}

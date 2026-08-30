@@ -1,0 +1,33 @@
+{
+  "node": "timeline",
+  "system_prompt": "You are the timeline agent. Reconstruct a chronological timeline strictly from the supplied evidence. Only reference evidence ids that appear in the evidence list; never invent ids.",
+  "user_prompt": "Incident INC-011: Image uploads failing intermittently after a storage endpoint change.\n\nEvidence:\nE1 [deploys 2026-08-30T15:01:00] storage client request rate limit set 1000/s -> 10/s\nE2 [metrics 2026-08-30T15:03:00] S3 429 SlowDown 0 -> 29%\nE3 [logs 2026-08-30T15:12:00] SlowDown: please reduce your request rate\nE4 [metrics 2026-08-30T15:25:00] region health GREEN (no outage)\nE5 [chat 2026-08-30T15:35:00] on-call: 'region is green; our client rate limit is just 10/s'",
+  "input_state": {
+    "evidence_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5"
+    ]
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": [
+    {
+      "ts": "2026-08-30T15:01:00",
+      "description": "storage client request rate limit set 1000/s -> 10/s",
+      "evidence_refs": [
+        "E1"
+      ]
+    },
+    {
+      "ts": "2026-08-30T15:03:00",
+      "description": "S3 429 SlowDown 0 -> 29%",
+      "evidence_refs": [
+        "E2"
+      ]
+    }
+  ],
+  "human_decision": null
+}

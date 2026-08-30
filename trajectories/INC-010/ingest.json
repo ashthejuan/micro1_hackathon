@@ -1,0 +1,31 @@
+{
+  "node": "ingest",
+  "system_prompt": "ingest node (no LLM; writes evidence and fires memory recall)",
+  "user_prompt": "",
+  "input_state": {
+    "incident_id": "INC-010",
+    "evidence_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5"
+    ]
+  },
+  "tool_calls": [
+    {
+      "tool": "recall_incidents",
+      "args": {
+        "symptom_text": "Upstream gRPC calls timing out after an upstream service upgrade.",
+        "n": 5
+      },
+      "response": "<async recall task fired>"
+    }
+  ],
+  "retries": [],
+  "output": {
+    "incident_id": "INC-010",
+    "recall_fired": true
+  },
+  "human_decision": null
+}

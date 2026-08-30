@@ -67,6 +67,14 @@ CREATE TABLE IF NOT EXISTS evaluation_run (
     red_herring_correct INTEGER,
     time_created TEXT
 );
+
+-- CLI run metadata: persists which backend (fake/live/replay) was used for
+-- `api.py run` so `approve` can enforce the same store (Design Risk #2).
+CREATE TABLE IF NOT EXISTS cli_run_meta (
+    incident_id  TEXT PRIMARY KEY REFERENCES incident(id) ON DELETE CASCADE,
+    backend      TEXT NOT NULL,
+    time_created TEXT NOT NULL
+);
 """
 
 
@@ -229,6 +237,26 @@ def insert_evaluation_run(conn: sqlite3.Connection, run_id: str, mode: str,
         (run_id, mode, model, incident_id, verification_score, red_herring_correct, time_created),
     )
     conn.commit()
+
+
+def set_cli_backend(conn: sqlite3.Connection, incident_id: str, backend: str,
+                    time_created: str = "1970-01-01T00:00:00") -> None:
+    """Persist the backend used for `api.py run` (Design Risk #2).
+
+    `backend` is one of "fake" | "live" | "replay". Stored per incident so
+    `approve` can enforce collection-store consistency.
+    """
+    conn.execute(
+        "INSERT OR REPLACE INTO cli_run_meta (incident_id, backend, time_created) VALUES (?,?,?)",
+        (incident_id, backend, time_created),
+    )
+    conn.commit()
+
+
+def get_cli_backend(conn: sqlite3.Connection, incident_id: str) -> str | None:
+    cur = conn.execute("SELECT backend FROM cli_run_meta WHERE incident_id=?", (incident_id,))
+    row = cur.fetchone()
+    return row["backend"] if row else None
 
 
 def json_dumps(obj) -> str:

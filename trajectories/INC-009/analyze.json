@@ -1,0 +1,38 @@
+{
+  "node": "analyze",
+  "system_prompt": "You are the root-cause analysis agent. Propose ranked root-cause candidates. Use `contradicting_evidence` to explicitly reject red herrings. You MAY be motivated by consulted prior incidents but MUST cite the CURRENT incident's evidence for every conclusion. Only reference current evidence ids; never invent ids.",
+  "user_prompt": "Incident INC-009: Feature rollout caused errors for a subset of users.\n\nEvidence:\nE1 [deploys 2026-08-28T10:01:00] flag 'new-checkout' enabled for 100% (intended 10%)\nE2 [metrics 2026-08-28T10:04:00] errors correlate 1:1 with flag=new-checkout users\nE3 [logs 2026-08-28T10:12:00] NullPointer when new-checkout path hit uninitialized cart\nE4 [metrics 2026-08-28T10:25:00] queue backlog 0 (empty)\nE5 [chat 2026-08-28T10:35:00] on-call: 'queue empty; the flag rolled to everyone'\n\nConsulted prior incidents (hypotheses ONLY, never cite as evidence):\n- INC-003 (score 0.156055): kafka_consumer_lag: Order processing stalled; consumers lagging after a Kafka partition rebalance.\n- INC-002 (score 0.129099): redis_cache_eviction: API latency spikes and cache hit-rate collapse after redis node maintenance.\n- INC-001 (score 0.075974): config_timeout_drop: Checkout failures and elevated payment errors after the 14:02 payment-service deploy.",
+  "input_state": {
+    "evidence_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5"
+    ],
+    "consulted": [
+      "INC-003",
+      "INC-002",
+      "INC-001"
+    ]
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": [
+    {
+      "rank": 1,
+      "confidence": 0.9,
+      "hypothesis": "Root cause is feature_flag_wrong",
+      "root_cause_label": "feature_flag_wrong",
+      "supporting_evidence": [
+        "E1",
+        "E2"
+      ],
+      "contradicting_evidence": [
+        "E5"
+      ],
+      "from_prior_incident": null
+    }
+  ],
+  "human_decision": null
+}

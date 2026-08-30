@@ -1,0 +1,16 @@
+{
+  "node": "human_gate",
+  "system_prompt": "human gate (simulated auto-approve in eval; real CLI in live use)",
+  "user_prompt": "",
+  "input_state": {
+    "incident_id": "INC-009",
+    "applied_incidents": []
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": {
+    "status": "approved",
+    "approved_by": "auto-eval"
+  },
+  "human_decision": "approved"
+}
