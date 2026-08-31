@@ -1,6 +1,12 @@
 {
   "incident_id": "INC-004",
   "agents": [
-    "ingest"
+    "ingest",
+    "timeline",
+    "analyze",
+    "writer",
+    "verifier",
+    "human_gate",
+    "memory_writer"
   ]
 }

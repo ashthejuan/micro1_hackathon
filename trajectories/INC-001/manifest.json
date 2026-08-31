@@ -1,0 +1,7 @@
+{
+  "incident_id": "INC-001",
+  "agents": [
+    "human_gate",
+    "memory_writer"
+  ]
+}

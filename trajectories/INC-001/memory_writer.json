@@ -1,0 +1,15 @@
+{
+  "node": "memory_writer",
+  "system_prompt": "memory_writer (CLI approve → embed)",
+  "user_prompt": "",
+  "input_state": {
+    "incident_id": "INC-001",
+    "verification_score": 1.0
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": {
+    "embedded": true
+  },
+  "human_decision": null
+}

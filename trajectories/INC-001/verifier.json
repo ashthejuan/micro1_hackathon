@@ -1,0 +1,80 @@
+{
+  "node": "verifier",
+  "system_prompt": "verifier node (deterministic SQLite set-check, no LLM)",
+  "user_prompt": "",
+  "input_state": {
+    "incident_id": "INC-001",
+    "recalled_ids": []
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": {
+    "incident_id": "INC-001",
+    "claim_reports": [
+      {
+        "claim_index": 0,
+        "statement": "14:02 deploy dropped timeout causing failures",
+        "evidence_refs": [
+          "E1",
+          "E4"
+        ],
+        "from_recalled_incident": null,
+        "backed": true,
+        "missing_evidence": []
+      },
+      {
+        "claim_index": 1,
+        "statement": "DB CPU spike at 14:25 was coincidental",
+        "evidence_refs": [
+          "E5"
+        ],
+        "from_recalled_incident": null,
+        "backed": true,
+        "missing_evidence": []
+      }
+    ],
+    "verification_score": 1.0
+  },
+  "human_decision": null,
+  "verifier_math": [
+    {
+      "claim_index": 0,
+      "claimed_refs": [
+        "E1",
+        "E4"
+      ],
+      "valid_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7",
+        "E8"
+      ],
+      "from_recalled_incident": null,
+      "backed": true,
+      "missing_evidence": []
+    },
+    {
+      "claim_index": 1,
+      "claimed_refs": [
+        "E5"
+      ],
+      "valid_ids": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6",
+        "E7",
+        "E8"
+      ],
+      "from_recalled_incident": null,
+      "backed": true,
+      "missing_evidence": []
+    }
+  ]
+}

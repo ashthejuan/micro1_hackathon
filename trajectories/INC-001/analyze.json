@@ -1,0 +1,37 @@
+{
+  "node": "analyze",
+  "system_prompt": "You are the root-cause analysis agent. Propose ranked root-cause candidates. Use `contradicting_evidence` to explicitly reject red herrings. You MAY be motivated by consulted prior incidents but MUST cite the CURRENT incident's evidence for every conclusion. Only reference current evidence ids; never invent ids.",
+  "user_prompt": "Incident INC-001: Checkout failures and elevated payment errors after the 14:02 payment-service deploy.\n\nEvidence:\nE1 [deploys 2026-08-20T14:02:00] payment-service v2.3.1 deployed; config change payment_timeout_ms 2000 -> 200\nE2 [metrics 2026-08-20T14:03:30] checkout p99 latency rose 800ms -> 4.2s\nE3 [metrics 2026-08-20T14:10:00] checkout error rate 0.1% -> 5.3%\nE4 [logs 2026-08-20T14:12:00] PaymentGateway timeout after 200ms (expected >=2000ms)\nE5 [metrics 2026-08-20T14:25:00] DB CPU spike to 95% (coincidental, unrelated batch job)\nE6 [chat 2026-08-20T14:30:00] on-call: 'looks like the 14:02 deploy changed a timeout; DB spike is a separate batch'\nE7 [deploys 2026-08-20T14:45:00] rollback payment_timeout_ms to 2000\nE8 [metrics 2026-08-20T14:50:00] checkout error rate recovered to 0.2%\n\nConsulted prior incidents (hypotheses ONLY, never cite as evidence):\n(none)",
+  "input_state": {
+    "evidence_ids": [
+      "E1",
+      "E2",
+      "E3",
+      "E4",
+      "E5",
+      "E6",
+      "E7",
+      "E8"
+    ],
+    "consulted": []
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": [
+    {
+      "rank": 1,
+      "confidence": 0.9,
+      "hypothesis": "Root cause is config_timeout_drop",
+      "root_cause_label": "config_timeout_drop",
+      "supporting_evidence": [
+        "E1",
+        "E2"
+      ],
+      "contradicting_evidence": [
+        "E8"
+      ],
+      "from_prior_incident": null
+    }
+  ],
+  "human_decision": null
+}

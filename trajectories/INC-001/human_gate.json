@@ -1,0 +1,17 @@
+{
+  "node": "human_gate",
+  "system_prompt": "human gate (CLI approve)",
+  "user_prompt": "",
+  "input_state": {
+    "incident_id": "INC-001",
+    "applied_incidents": []
+  },
+  "tool_calls": [],
+  "retries": [],
+  "output": {
+    "status": "approved",
+    "approved_by": "human",
+    "applied": []
+  },
+  "human_decision": "approved"
+}
